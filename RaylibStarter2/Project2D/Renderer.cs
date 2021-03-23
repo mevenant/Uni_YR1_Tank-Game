@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Raylib;
 using static Raylib.Raylib;
+using MathClasses;
 
 //--------------------------------------------------------------
 // Functions for use with custom math library
