@@ -19,6 +19,7 @@ namespace Project2D
         private float timer = 0;
         private int fps = 1;
         private int frames;
+		public static CollisionManager collision_manager = new CollisionManager();
 
         private float deltaTime = 0.005f;
 		Node root;
@@ -58,11 +59,17 @@ namespace Project2D
             }
             frames++;
 
-			//Update game objects here
-			foreach(Node node in root.get_children())
+			//update
+			foreach (Node node in root.get_children())
 			{
-				if (node is PhysicsNode physics_node)
+				if (node is PhysicsNode physics_node) 
+				{ 
+					//update transformation
 					physics_node._physics_update(deltaTime);
+
+					//physics
+					collision_manager.run();
+				}
 
 				node.update_global_transform();
 			}
@@ -89,13 +96,17 @@ namespace Project2D
 			//init root
 			root = new Node(null);
 
+			//Wall
+			var wall = new PhysicsNode(root);
+			wall.set_texture(Graphics.get_texture_from_path(Graphics.wall));
+			wall.set_position(new Vector2(214, 96));
+
+			//Tank
 			var tank = new Tank(root);
 			tank.set_position(new Vector2(100, 100));
 
-			var turret = new Node(tank);
-			turret.set_texture(Graphics.get_texture_from_path(Graphics.tank_turret));
-			turret.set_position(new Vector2(0, -45));
-			turret.set_rotation(0.7f);
+			collision_manager.add_node(tank);
+			collision_manager.add_node(wall);
 		}
 
     }

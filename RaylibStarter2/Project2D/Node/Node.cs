@@ -129,5 +129,15 @@ class Node
 		texture = _texture;
 	}
 
+	public static float clamp(float _value, float _min, float _max)
+	{
+		if (_value < _min)
+			_value = _min;
+		else if (_value > _max)
+			_value = _max;
+
+		return _value;
+	}
+
 }
 

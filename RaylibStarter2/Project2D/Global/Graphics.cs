@@ -10,6 +10,7 @@ static class Graphics
 {
 	public static string tank_body = "../Graphics/sprTank_Body.png";
 	public static string tank_turret = "../Graphics/sprTank_Turret.png";
+	public static string wall = "../Graphics/sprWall.png";
 
 	public static Texture2D get_texture_from_path(string _path)
 	{

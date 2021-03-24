@@ -12,9 +12,12 @@ class Tank : PhysicsNode
 	// -- // -- // -- // -- //
 	public Tank(Node _parent) : base(_parent)
 	{
-		update_physics_variables(ACCELERATION_MED, FRICTION_HIGH, MAX_SPEED_LOW);
+		update_physics_variables(ACCELERATION_MED, FRICTION_MED, MAX_SPEED_HIGH);
 
 		texture = Graphics.get_texture_from_path(Graphics.tank_body);
+
+		var turret = new Node(this);
+		turret.set_texture(Graphics.get_texture_from_path(Graphics.tank_turret));
 	}
 
 	// -- // -- // -- // -- //
@@ -37,12 +40,37 @@ class Tank : PhysicsNode
 
 	public override void _move(Vector2 _input_direction)
 	{
-		direction = new Vector2(0, _input_direction.y);
-		float rotation_angle = _input_direction.x;
-		oriantation_matrix.SetRotateZ(rotation_angle * delta);
+		direction = Vector2.UP;
 
-		if (speed < max_speed)
-			speed += acceleration * delta;
+		if (Math.Abs(speed) > 1)
+		{
+			float rotation_angle = _input_direction.x;
+			oriantation_matrix.SetRotateZ(rotation_angle * delta);
+		}
 
+		speed += acceleration * _input_direction.y * delta;
+		
+	}
+
+	public override void _on_collision(PhysicsNode _other)
+	{
+		base._on_collision(_other);
+
+		//push apart
+		Vector2 new_pos = (_other.get_global_position() - get_global_position()) * velocity.Magnitude();
+
+		set_position(get_local_position() - new_pos);
+
+		speed = 0;
+		return;
+		//circle collision: calculate normal
+		Vector2 normal = _other.get_global_position() - get_global_position();
+		normal.Normalize();
+
+		//calculate reflection
+		Vector2 reflection = -2.0f * velocity.Dot(normal) * normal + velocity;
+
+		//change velocity
+		velocity = reflection;
 	}
 }

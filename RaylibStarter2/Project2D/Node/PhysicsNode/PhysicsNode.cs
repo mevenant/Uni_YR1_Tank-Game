@@ -5,6 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using MathClasses;
 
+struct Collider
+{
+	public float radius;
+
+	public Collider(float _radius)
+	{
+		radius = _radius;
+	}
+
+}
 class PhysicsNode : Node
 {
 	// -- // -- // -- // -- //
@@ -13,23 +23,25 @@ class PhysicsNode : Node
 	protected float delta = 0f;
 
 	protected Vector2 velocity;
-	protected Vector2 direction;
-	protected float speed = 0f;
+	protected Vector2 direction;	//the direction vector applied to velocity
+	protected float speed = 0f;		//@Warning: speed can be negative
 	protected float max_speed;
 	protected float acceleration;
 	protected float friction;
+	public	  Collider collider = new Collider(16f);
 
 	//physics matrices
 	protected Matrix3 oriantation_matrix = new Matrix3(true);
 	protected Matrix3 translation_matrix = new Matrix3(true);
+	protected Matrix3 previous_transform = new Matrix3(true);
 
 	public const float ACCELERATION_FAST = 400f;
 	public const float ACCELERATION_MED = 200f;
 	public const float ACCELERATION_SLOW = 80f;
 
 	public const float FRICTION_HIGH = 100f;
-	public const float FRICTION_MED = 50f;
-	public const float FRICTION_LOW = 10f;
+	public const float FRICTION_MED = 80f;
+	public const float FRICTION_LOW = 40f;
 
 	public const float MAX_SPEED_HIGH = 300;
 	public const float MAX_SPEED_MED = 150;
@@ -59,8 +71,10 @@ class PhysicsNode : Node
 		delta = _delta;
 
 		// -- apply friction -- //
-		if (speed > 0)
-			speed -= friction * delta;
+		
+		speed -= friction * delta * Math.Sign(speed);
+		speed = clamp(speed, -max_speed, max_speed);
+		
 
 		// -- update velocity -- //
 		direction.Normalize();
@@ -75,7 +89,9 @@ class PhysicsNode : Node
 			//update local matrix
 		local_transform = local_transform * oriantation_matrix * translation_matrix;
 
-		foreach(Node node in get_children())
+		previous_transform = local_transform;
+
+		foreach (Node node in get_children())
 		{
 			if (node is PhysicsNode physicsNode)
 				physicsNode._physics_update(_delta);
@@ -94,6 +110,10 @@ class PhysicsNode : Node
 		if (speed < max_speed)
 			speed += acceleration * delta;
 	}
+	public Collider get_collider()
+	{
+		return collider;
+	}
 
 	//set acceleration, friction, and max speed
 	protected void update_physics_variables(float _acceleration = ACCELERATION_MED, float _friction = FRICTION_MED, float _max_speed = MAX_SPEED_MED)
@@ -101,6 +121,11 @@ class PhysicsNode : Node
 		acceleration = _acceleration;
 		friction = _friction;
 		max_speed = _max_speed;
+	}
+
+	public virtual void _on_collision(PhysicsNode _other)
+	{
+		Console.WriteLine("collision occured");
 	}
 }
 
