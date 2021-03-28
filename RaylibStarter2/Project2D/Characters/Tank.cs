@@ -7,12 +7,14 @@ using MathClasses;
 
 class Tank : PhysicsNode
 {
+	private int rotation_speed = 2;
+
 	// -- // -- // -- // -- //
 	//		CONSTRUCTOR
 	// -- // -- // -- // -- //
 	public Tank(Node _parent) : base(_parent)
 	{
-		update_physics_variables(ACCELERATION_MED, FRICTION_MED, MAX_SPEED_HIGH);
+		update_physics_variables(ACCELERATION_FAST, FRICTION_HIGH, MAX_SPEED_HIGH);
 
 		texture = Graphics.get_texture_from_path(Graphics.tank_body);
 
@@ -44,7 +46,7 @@ class Tank : PhysicsNode
 
 		if (Math.Abs(speed) > 1)
 		{
-			float rotation_angle = _input_direction.x;
+			float rotation_angle = _input_direction.x * rotation_speed;
 			oriantation_matrix.SetRotateZ(rotation_angle * delta);
 		}
 
@@ -63,14 +65,5 @@ class Tank : PhysicsNode
 
 		speed = 0;
 		return;
-		//circle collision: calculate normal
-		Vector2 normal = _other.get_global_position() - get_global_position();
-		normal.Normalize();
-
-		//calculate reflection
-		Vector2 reflection = -2.0f * velocity.Dot(normal) * normal + velocity;
-
-		//change velocity
-		velocity = reflection;
 	}
 }
