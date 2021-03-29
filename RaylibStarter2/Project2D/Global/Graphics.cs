@@ -11,6 +11,10 @@ static class Graphics
 	public static string tank_body = "../Graphics/sprTank_Body.png";
 	public static string tank_turret = "../Graphics/sprTank_Turret.png";
 	public static string wall = "../Graphics/sprWall.png";
+	public static string empty_grid = "../Graphics/sprEmptyGrid.png";
+
+	public static Texture2D texture_wall = get_texture_from_path(wall);
+	public static Texture2D texture_empty_grid = get_texture_from_path(empty_grid);
 
 	public static Texture2D get_texture_from_path(string _path)
 	{
@@ -20,5 +24,6 @@ static class Graphics
 
 		return result;
 	}
+
 }
 

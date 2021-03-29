@@ -11,16 +11,31 @@ class CollisionManager
 
 	public void run()
 	{
-		foreach(PhysicsNode node1 in nodes)
+		//foreach(PhysicsNode node1 in nodes)
+		//{
+		//	foreach(PhysicsNode node2 in nodes)
+		//	{
+		//		if (node1 == node2)
+		//			continue;
+		//
+		//		//test collision
+		//		Vector2 difference = node2.get_global_position() - node1.get_global_position();
+		//		if (difference.Magnitude() * 0.5f < node1.get_collider().radius)
+		//		{
+		//			node1._on_collision(node2);
+		//		}
+		//	}
+		//}
+
+		foreach (PhysicsNode node1 in nodes)
 		{
-			foreach(PhysicsNode node2 in nodes)
+			foreach (PhysicsNode node2 in nodes)
 			{
 				if (node1 == node2)
 					continue;
-		
+
 				//test collision
-				Vector2 difference = node2.get_global_position() - node1.get_global_position();
-				if (difference.Magnitude() * 0.5f < node1.get_collider().radius)
+				if (node1.get_collider().overlaps(node2.get_collider()))
 				{
 					node1._on_collision(node2);
 				}

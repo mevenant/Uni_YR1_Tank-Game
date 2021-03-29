@@ -8,7 +8,8 @@ using MathClasses;
 class Tank : PhysicsNode
 {
 	private int rotation_speed = 2;
-
+	private Node turret;
+	
 	// -- // -- // -- // -- //
 	//		CONSTRUCTOR
 	// -- // -- // -- // -- //
@@ -17,11 +18,11 @@ class Tank : PhysicsNode
 		update_physics_variables(ACCELERATION_FAST, FRICTION_HIGH, MAX_SPEED_HIGH);
 
 		texture = Graphics.get_texture_from_path(Graphics.tank_body);
+		turret = new Node(this, Graphics.tank_turret);
 
-		var turret = new Node(this);
-		turret.set_texture(Graphics.get_texture_from_path(Graphics.tank_turret));
 	}
 
+	
 	// -- // -- // -- // -- //
 	//		 METHODS
 	// -- // -- // -- // -- //
@@ -57,13 +58,17 @@ class Tank : PhysicsNode
 	public override void _on_collision(PhysicsNode _other)
 	{
 		base._on_collision(_other);
-
 		//push apart
-		Vector2 new_pos = (_other.get_global_position() - get_global_position()) * velocity.Magnitude();
+		var collision_direction = _other.get_global_position() - get_global_position();
+		collision_direction.Normalize();
+		Vector2 new_pos = collision_direction * delta;
 
 		set_position(get_local_position() - new_pos);
+		Console.WriteLine("Tank collision result: ------------");
+		Console.WriteLine(new_pos);
+		Console.WriteLine(get_local_position() - new_pos);
 
-		speed = 0;
+		speed = -speed;
 		return;
 	}
 }

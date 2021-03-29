@@ -5,16 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MathClasses;
 
-struct Collider
-{
-	public float radius;
 
-	public Collider(float _radius)
-	{
-		radius = _radius;
-	}
-
-}
 class PhysicsNode : Node
 {
 	// -- // -- // -- // -- //
@@ -28,7 +19,7 @@ class PhysicsNode : Node
 	protected float max_speed;
 	protected float acceleration;
 	protected float friction;
-	public	  Collider collider = new Collider(16f);
+	public Collider collider;
 
 	//physics matrices
 	protected Matrix3 oriantation_matrix = new Matrix3(true);
@@ -48,18 +39,25 @@ class PhysicsNode : Node
 	public const float MAX_SPEED_LOW = 80;
 
 	// -- // -- // -- // -- //
-	//		CONSTRUCTOR
+	//		CONSTRUCTOR     //
 	// -- // -- // -- // -- //
 	public PhysicsNode(Node _parent) : base(_parent)
 	{
 		parent = _parent;
 		update_physics_variables();
+
+		//collider = new BoxCollider(
+		//	new Vector2(-32, -32),
+		//	new Vector2(32, 32));
+		collider = new CircleCollider(30f);
 	}
 	
 	public PhysicsNode(Node _parent, float _acceleration, float _friction, float _max_speed) : base(_parent)
 	{
 		parent = _parent;
 		update_physics_variables(_acceleration, _friction, _max_speed);
+
+		collider = new CircleCollider(30f);
 	}
 
 	// -- // -- // -- // -- // -- //
@@ -98,6 +96,15 @@ class PhysicsNode : Node
 		}
 	}
 
+	public override void update_global_transform()
+	{
+		base.update_global_transform();
+		if (collider != null)
+		{
+			collider.set_position(get_global_position());
+		}
+	}
+
 	// -- // -- // -- // -- //
 	//		 METHODS		//
 	// -- // -- // -- // -- //
@@ -125,7 +132,7 @@ class PhysicsNode : Node
 
 	public virtual void _on_collision(PhysicsNode _other)
 	{
-		Console.WriteLine("collision occured");
+		//Console.WriteLine("collision occured");
 	}
 }
 

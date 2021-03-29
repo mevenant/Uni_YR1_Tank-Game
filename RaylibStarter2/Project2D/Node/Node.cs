@@ -26,12 +26,14 @@ class Node
 	public Node(Node _parent, string _texture_path = "")
 	{
 		set_parent(_parent);
+		if (_texture_path != null && !_texture_path.Equals(""))
+			set_texture(Graphics.get_texture_from_path(_texture_path));
 	}
 
 	// -- // -- // -- // -- // -- //
 	//VIRTUAL METHODS
 	// -- // -- // -- // -- // -- //
-		
+
 	//called everytime the node should be drawn
 	public virtual void _draw()
 	{
@@ -87,7 +89,7 @@ class Node
 	}
 
 	//update global transform
-	public void update_global_transform()
+	public virtual void update_global_transform()
 	{
 		if (parent != null)
 			global_transform = parent.global_transform * local_transform;
@@ -137,6 +139,11 @@ class Node
 			_value = _max;
 
 		return _value;
+	}
+
+	public Matrix3 get_global_transform()
+	{
+		return global_transform;
 	}
 
 }
