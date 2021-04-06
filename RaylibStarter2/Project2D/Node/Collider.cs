@@ -27,6 +27,11 @@ struct CircleCollider : Collider
 		position = new Vector2();
 	}
 
+	public void set_radius(float _radius)
+	{
+		radius = _radius;
+	}
+
 	public void set_position(Vector2 _pos)
 	{
 		position = _pos;
@@ -75,6 +80,13 @@ struct BoxCollider : Collider
 		max = _max;
 		position = new Vector2();
 	}
+
+	public void set_bbox(Vector2 _start, Vector2 _end)
+	{
+		min = _start;
+		max = _end;
+	}
+
 	public void set_position(Vector2 _pos)
 	{
 		position = _pos;

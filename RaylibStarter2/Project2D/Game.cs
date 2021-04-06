@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Raylib;
 using static Raylib.Raylib;
 using MathClasses;
+
+
 namespace Project2D
 {
     class Game
@@ -45,7 +47,7 @@ namespace Project2D
         public Game()
         {
 			root = new Node(null);
-			ui_root = new UI(null);
+			ui_root = new UI();
         }
 
         public void Init()
@@ -62,13 +64,36 @@ namespace Project2D
 			{
 				generate_world("../Worlds/test_world.txt");
 				//add_default_nodes();
-			} else if (mode == Modes.Editor)
+			} 
+			else if (mode == Modes.Editor)
 			{
-				//test button
-				Button btn_test = new Button(ui_root, "", new Vector2(32, 32), RLColor.BLACK, RLColor.WHITE, RLColor.WHITE, 64, 64);
-				Button btn_grid = new Button(ui_root, "", new Vector2(0, 96), Graphics.texture_empty_grid);
-				btn_test._action = print_hey;
-				//btn_grid._action = btn_grid.set_texture(Graphics.texture_wall);	//TODO: CLEAN UP BEFORE DOING ANYTHING
+				//Test button
+				//Button btn_test = new Button(ui_root, "", new Vector2(32, 32), RLColor.BLACK, RLColor.WHITE, RLColor.WHITE, 64, 64);
+				//btn_test._action = print_hey;
+
+
+				//Grid test
+				//LevelEditor level_editor = new LevelEditor();
+				//level_editor._set_parent(ui_root);
+				// ...
+
+				Container container = new Container(new Vector2(32, 32), new Vector2(360, 360));
+				container.set_sort(Container.sort_horizontally);
+				container._set_parent(ui_root);
+
+				//Button button = new Button("test button", new Vector2(64, 64), new Vector2(64, 96), RLColor.BROWN, RLColor.WHITE, RLColor.RED);
+				Button button1 = new Button(new Vector2(), Graphics.texture_empty_grid);
+				Button button2 = new Button("Hey there", new Vector2(), new Vector2(96, 32), RLColor.BROWN, RLColor.WHITE, RLColor.RED);
+				Button button3 = new Button(new Vector2(), Graphics.texture_empty_grid);
+				Button button4 = new Button(new Vector2(), Graphics.texture_empty_grid);
+				Button button5 = new Button(new Vector2(), Graphics.texture_empty_grid);
+
+				button1.set_margins(16, 16, 16, 16);
+				button1._set_parent(container);
+				button2._set_parent(ui_root);
+				button3._set_parent(container);
+				button4._set_parent(container);
+				button5._set_parent(container);
 			}
 		}
 
@@ -110,13 +135,14 @@ namespace Project2D
 					node.update_global_transform();
 				}
 
-				ui_root.update_global_transform();
+				ui_root._update_global_transform();
 				ui_root._update_state();
 
 				collision_manager.run();
+
 			} else if (mode == Modes.Editor)
 			{
-				ui_root.update_global_transform();
+				ui_root._update_global_transform();
 				ui_root._update_state();
 			}
 		}
@@ -131,30 +157,24 @@ namespace Project2D
 				//Draw game objects here
 				DrawText(fps.ToString(), 10, 10, 14, RLColor.RED);
 				BeginMode2D(camera);
+
 				//Drawing occures here
 
 				EndMode2D();
 
 				root._draw();
+
 			} else if (mode == Modes.Editor)
 			{
-				draw_editor();
+				//Draw title
+				DrawText("EDITOR", 10, 10, 14, RLColor.RED);
+
+				//Draw UI
+				ui_root._draw();
 			}
 			
 			EndDrawing();
         }
-
-		void draw_editor()
-		{
-			//Draw title
-			DrawText("EDITOR", 10, 10, 14, RLColor.RED);
-
-			//Draw UI
-			ui_root._draw();
-
-			//Draw world grid
-		}
-
 
 		private void add_default_nodes()
 		{

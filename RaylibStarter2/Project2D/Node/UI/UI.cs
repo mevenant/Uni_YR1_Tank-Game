@@ -7,25 +7,37 @@ using MathClasses;
 using Raylib;
 using static Raylib.Raylib;
 
+struct Signal {
+	public static string MOUSE_ENTERED = "0";
+	public static string MOUSE_EXITED = "1";
+	public static string MOUSE_PRESSED = "2";
+
+	public UI source;
+	public string message;
+
+	public Signal(UI _source, string _message)
+    {
+		source = _source;
+		message = _message;
+    }
+}
+
 class UI
 {
 	//Collider
 	protected Collider collider;
 
 	//Signals
+	List<UI> signal_connections = new List<UI>();
 	protected bool is_hovered = false;
 
 	//Node fields
-	protected	List<UI> children = new List<UI>(); //list of children nodes
+	private List<UI> children = new List<UI>(); //list of children nodes
 	protected	UI parent = null;                       //parent node
 	protected	Colour modulate = RLColor.WHITE.ToColor();
 	protected	Matrix3 local_transform = new Matrix3(true);
 	private		Matrix3 global_transform = new Matrix3(true);   //updated in Update of Game.cs
 
-	public UI(UI _parent)
-	{
-		set_parent(_parent);
-	}
 
 	//go through each child and update the UI state based on input. e.g. mouse hover or mouse click
 	public virtual void _update_state()
@@ -72,7 +84,7 @@ class UI
 	}
 
 	//update global transform
-	public virtual void update_global_transform()
+	public virtual void _update_global_transform()
 	{
 		if (parent != null)
 			global_transform = parent.global_transform * local_transform;
@@ -85,23 +97,27 @@ class UI
 
 		foreach (UI node in children)
 		{
-			node.update_global_transform();
+			node._update_global_transform();
 		}
 	}
 
 	public virtual void _on_mouse_enter()
 	{
-		//Console.WriteLine("UI hovered");
+		Console.WriteLine("UI hovered");
+		//emit signal that mouse entered this button
+		_emit_signal(new Signal(this, Signal.MOUSE_ENTERED));
 	}
 
 	public virtual void _on_mouse_exit()
 	{
-		//Console.WriteLine("UI unhovered");
+		Console.WriteLine("UI unhovered");
+		_emit_signal(new Signal(this, Signal.MOUSE_EXITED));
 	}
 
 	public virtual void _on_pressed()
 	{
-		//Console.WriteLine("UI pressed");
+		Console.WriteLine("UI pressed");
+		_emit_signal(new Signal(this, Signal.MOUSE_PRESSED));
 	}
 
 	public static RLVector2 get_RLVector2(Vector2 _vector)
@@ -125,15 +141,17 @@ class UI
 	// -- // -- // -- // -- // -- //
 
 	//Add a node as a child of this node
-	public void add_child(UI _node)
+	public virtual void _add_child(UI _node)
 	{
 		children.Add(_node);
+		_node._set_parent(this);
 	}
 
 	//Remove a given node from the children of this node
-	public void remove_child(UI _node)
+	public virtual void _remove_child(UI _node)
 	{
 		children.Remove(_node);
+		_node._set_parent(null);
 	}
 
 	//Get parent of this node
@@ -149,17 +167,20 @@ class UI
 	}
 
 	//This is enough to change the parent of a node
-	public void set_parent(UI _parent)
+	public virtual void _set_parent(UI _parent)
 	{
+		if (_parent.get_children().Contains(this))
+			return;
+
 		//if this node is a child of another parent, remove this from their list of children
 		if (parent != null)
-			parent.remove_child(this);
+			parent._remove_child(this);
 
 		//update current parent and its list of children
 		parent = _parent;
 
 		if (parent != null)
-			parent.add_child(this);
+			parent._add_child(this);
 	}
 
 	//update local transform based on the given Vector2
@@ -189,6 +210,29 @@ class UI
 	public Matrix3 get_global_transform()
 	{
 		return global_transform;
+	}
+
+	//Recieve signal
+	public virtual void _recieve_signal(Signal _signal)
+    { }
+
+	//Emit signal to connections
+	public virtual void _emit_signal(Signal _signal)
+    {
+		foreach (UI node in signal_connections)
+        {
+			node._recieve_signal(_signal);
+        }
+    }
+
+	public void connect(UI node)
+	{
+		signal_connections.Add(node);
+	}
+
+	public void disconnect(UI node)
+	{
+		signal_connections.Remove(node);
 	}
 }
 

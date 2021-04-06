@@ -50,11 +50,14 @@
   <ItemGroup>
     <Compile Include="Characters\Tank.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Global\Global.cs" />
     <Compile Include="Global\Graphics.cs" />
     <Compile Include="Global\Input.cs" />
     <Compile Include="Node\Collider.cs" />
     <Compile Include="Node\Node.cs" />
     <Compile Include="Node\PhysicsNode\PhysicsNode.cs" />
+    <Compile Include="Node\UI\Containers\Container.cs" />
+    <Compile Include="Node\UI\Containers\LevelEditor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Renderer.cs" />

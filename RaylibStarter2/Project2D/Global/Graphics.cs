@@ -14,6 +14,7 @@ static class Graphics
 	public static string empty_grid = "../Graphics/sprEmptyGrid.png";
 
 	public static Texture2D texture_wall = get_texture_from_path(wall);
+	public static Texture2D texture_tank = get_texture_from_path(tank_body);
 	public static Texture2D texture_empty_grid = get_texture_from_path(empty_grid);
 
 	public static Texture2D get_texture_from_path(string _path)
