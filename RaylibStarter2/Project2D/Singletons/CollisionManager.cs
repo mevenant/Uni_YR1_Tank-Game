@@ -1,31 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MathClasses;
+﻿using System.Collections.Generic;
+
+// ----------------- //
+// Handle collisions //
+// ----------------- //
 
 class CollisionManager
 {
 	List<PhysicsNode> nodes = new List<PhysicsNode>();
 
+	// run collision manager by checking if their colliders overlap //
+
 	public void run()
 	{
-		//foreach(PhysicsNode node1 in nodes)
-		//{
-		//	foreach(PhysicsNode node2 in nodes)
-		//	{
-		//		if (node1 == node2)
-		//			continue;
-		//
-		//		//test collision
-		//		Vector2 difference = node2.get_global_position() - node1.get_global_position();
-		//		if (difference.Magnitude() * 0.5f < node1.get_collider().radius)
-		//		{
-		//			node1._on_collision(node2);
-		//		}
-		//	}
-		//}
 
 		foreach (PhysicsNode node1 in nodes)
 		{
@@ -41,31 +27,20 @@ class CollisionManager
 				}
 			}
 		}
-
-		//for (int i = 0; i < nodes.Count; ++i)
-		//{
-		//	for (int j = i + 1; j < nodes.Count; ++j)
-		//	{
-		//		PhysicsNode node1 = nodes[i];
-		//		PhysicsNode node2 = nodes[j];
-		//
-		//		if (node1 == node2)
-		//			continue;
-		//
-		//		//test collision
-		//		Vector2 difference = node2.get_global_position() - node1.get_global_position();
-		//		if (difference.Magnitude() < node1.get_collider().radius)
-		//		{
-		//			node1._on_collision(node2);
-		//			node2._on_collision(node1);
-		//		}
-		//	}
-		//}
 	}
+
+	// add a node to collision manager for it to be physically included //
 
 	public void add_node(PhysicsNode _node)
 	{
 		nodes.Add(_node);
 	}
+
+	// clear collision manager //
+
+	public void clear()
+    {
+		nodes.Clear();
+    }
 }
 

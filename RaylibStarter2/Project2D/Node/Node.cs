@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Raylib;
-using static Raylib.Raylib;
 using MathClasses;
+
+// ------------------------- //
+// Base of every game object //
+// ------------------------- //
 
 class Node
 {
@@ -18,7 +17,8 @@ class Node
 	protected	Texture2D texture;
 	protected	Colour modulate = RLColor.WHITE.ToColor();
 	protected	Matrix3 local_transform = new Matrix3(true);
-	private		Matrix3 global_transform = new Matrix3(true);	//updated in Update of Game.cs
+	private		Matrix3 global_transform = new Matrix3(true);   //updated in Update of Game.cs
+	protected bool deleted = false;
 
 	// -- // -- // -- // -- //
 	//CONSTRUCTORS
@@ -37,6 +37,9 @@ class Node
 	//called everytime the node should be drawn
 	public virtual void _draw()
 	{
+		if (deleted)
+			return;
+
 		Renderer.DrawTexture(texture, global_transform, modulate);
 
 		foreach (Node node in get_children())
@@ -77,6 +80,9 @@ class Node
 	//This is enough to change the parent of a node
 	public void set_parent(Node _parent)
 	{
+		if (deleted)
+			return;
+
 		//if this node is a child of another parent, remove this from their list of children
 		if (parent != null)
 			parent.remove_child(this);
@@ -88,9 +94,13 @@ class Node
 			parent.add_child(this);
 	}
 
-	//update global transform
-	public virtual void update_global_transform()
+	// update global transform //
+
+	public virtual void _update_global_transform()
 	{
+		if (deleted)
+			return;
+
 		if (parent != null)
 			global_transform = parent.global_transform * local_transform;
 		else
@@ -98,27 +108,33 @@ class Node
 
 		foreach (Node node in children)
 		{
-			node.update_global_transform();
+			node._update_global_transform();
 		}
 	}
 
-	//update local transform based on the given Vector2
+	// update local transform based on the given Vector2 //
 	public void set_position(Vector2 _vec)
 	{
 		local_transform.SetPosition(_vec);
 	}
+
+	// get local position //
 
 	public Vector2 get_local_position()
 	{
 		return local_transform.GetPosition();
 	}
 
+	// get global position //
+
 	public Vector2 get_global_position()
 	{
 		return global_transform.GetPosition();
 	}
 
-	public void set_rotation(float _radians)
+	// rotate the transform of this node relatively //
+
+	public void rotate(float _radians)
 	{
 		Matrix3 rotation = new Matrix3(true);
 		rotation.SetRotateZ(_radians);
@@ -126,10 +142,30 @@ class Node
 		local_transform = local_transform * rotation;
 	}
 
+	// update the texture of this node //
+
 	public void set_texture(Texture2D _texture)
 	{
 		texture = _texture;
 	}
+
+	// get the global transform of this node //
+
+	public Matrix3 get_global_transform()
+	{
+		return global_transform;
+	}
+
+	// delete this node and its children //
+	public void free()
+	{
+		foreach (Node node in children)
+		{
+			node.free();
+		}
+	}
+
+	// use to clamp //
 
 	public static float clamp(float _value, float _min, float _max)
 	{
@@ -141,10 +177,6 @@ class Node
 		return _value;
 	}
 
-	public Matrix3 get_global_transform()
-	{
-		return global_transform;
-	}
-
+	
 }
 

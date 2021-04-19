@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MathClasses;
 
 class Tank : PhysicsNode
@@ -19,7 +15,6 @@ class Tank : PhysicsNode
 
 		texture = Graphics.get_texture_from_path(Graphics.tank_body);
 		turret = new Node(this, Graphics.tank_turret);
-
 	}
 
 	
@@ -31,21 +26,30 @@ class Tank : PhysicsNode
 		oriantation_matrix.Reset();
 		translation_matrix.Reset();
 
-		//move based on input
+		//move and rotate turret based on input
 		var input = Input.get_primary_input();
-		
-		//only change direction when input
+		var second_input = Input.get_secondary_input();
+
+		//only change direction when input is not zero
 		if (input != Vector2.ZERO)
 			_move(input);
 
+		if (second_input.x != 0)
+        {
+			turret.rotate(second_input.x * delta * 2);
+		}
+			
+
 		base._physics_update(_delta);
 	}
+
+	// handle the movement of the tank //
 
 	public override void _move(Vector2 _input_direction)
 	{
 		direction = Vector2.UP;
 
-		if (Math.Abs(speed) > 1)
+		if (Math.Abs(speed) > 1)			// allow the tank to rotate only when it's moving
 		{
 			float rotation_angle = _input_direction.x * rotation_speed;
 			oriantation_matrix.SetRotateZ(rotation_angle * delta);
@@ -54,6 +58,8 @@ class Tank : PhysicsNode
 		speed += acceleration * _input_direction.y * delta;
 		
 	}
+
+	// handle the collision of the tank //
 
 	public override void _on_collision(PhysicsNode _other)
 	{

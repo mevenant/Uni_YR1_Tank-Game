@@ -2,9 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Raylib;
 using static Raylib.Raylib;
 using MathClasses;
@@ -16,41 +13,39 @@ namespace Project2D
     {
         Stopwatch stopwatch = new Stopwatch();
 
-        private long currentTime = 0;
+		public static CollisionManager collision_manager = new CollisionManager();
+
+		private long currentTime = 0;
         private long lastTime = 0;
         private float timer = 0;
         private int fps = 1;
         private int frames;
-		enum Modes
+		public enum Modes
 		{
 			Normal,
 			Editor,
+			Menu,
 		}
-		Modes mode = Modes.Editor;
-
-		// -- // -- // -- // -- //
-		//		  NORMAL		//
-		// -- // -- // -- // -- //
-		public static CollisionManager collision_manager = new CollisionManager();
-		private Camera2D camera;
-
-		// -- // -- // -- // -- //
-		//		  EDITOR		//
-		// -- // -- // -- // -- //
-		private int editor_grid_size = 64;
-
+		Modes mode = Modes.Menu;
 
         private float deltaTime = 0.005f;
 		Node root;
 		UI ui_root;
 
-        public Game()
+        public Game(Modes _initial_mode)
         {
 			root = new Node(null);
 			ui_root = new UI();
+			Global.game = this;
+			change_mode(_initial_mode);
         }
 
-        public void Init()
+
+		// --------------- //
+		// INITIALIZE GAME //
+		// --------------- //
+
+        public void init()
         {
             stopwatch.Start();
             lastTime = stopwatch.ElapsedMilliseconds;
@@ -59,54 +54,63 @@ namespace Project2D
             {
                 Console.WriteLine("Stopwatch high-resolution frequency: {0} ticks per second", Stopwatch.Frequency);
             }
+		}
 
+		// ----------------------- //
+		// change mode of the game //
+
+		public void change_mode(Modes _mode)
+        {
+			mode = _mode;
+			
+			//clear roots
+			root = new Node(null);
+			ui_root = new UI();
+			collision_manager.clear();
+
+			//create content based on mode
 			if (mode == Modes.Normal)
 			{
-				generate_world("../Worlds/test_world.txt");
-				//add_default_nodes();
-			} 
+				generate_game_world("../Worlds/created_level.txt");
+				var button_size = new Vector2(96, 64);
+				Button button_menu = new Button("Back", Global.WINDOW_SIZE - button_size, button_size);
+				button_menu._set_parent(ui_root);
+				button_menu.set_action(change_to_menu);
+			}
 			else if (mode == Modes.Editor)
 			{
-				//Test button
-				//Button btn_test = new Button(ui_root, "", new Vector2(32, 32), RLColor.BLACK, RLColor.WHITE, RLColor.WHITE, 64, 64);
-				//btn_test._action = print_hey;
-
-
-				//Grid test
-				//LevelEditor level_editor = new LevelEditor();
-				//level_editor._set_parent(ui_root);
-				// ...
-
-				Container container = new Container(new Vector2(32, 32), new Vector2(360, 360));
-				container.set_sort(Container.sort_horizontally);
-				container._set_parent(ui_root);
-
-				//Button button = new Button("test button", new Vector2(64, 64), new Vector2(64, 96), RLColor.BROWN, RLColor.WHITE, RLColor.RED);
-				Button button1 = new Button(new Vector2(), Graphics.texture_empty_grid);
-				Button button2 = new Button("Hey there", new Vector2(), new Vector2(96, 32), RLColor.BROWN, RLColor.WHITE, RLColor.RED);
-				Button button3 = new Button(new Vector2(), Graphics.texture_empty_grid);
-				Button button4 = new Button(new Vector2(), Graphics.texture_empty_grid);
-				Button button5 = new Button(new Vector2(), Graphics.texture_empty_grid);
-
-				button1.set_margins(16, 16, 16, 16);
-				button1._set_parent(container);
-				button2._set_parent(ui_root);
-				button3._set_parent(container);
-				button4._set_parent(container);
-				button5._set_parent(container);
+				LevelEditor level_editor = new LevelEditor(GetScreenWidth(), GetScreenHeight());
+				level_editor._set_parent(ui_root);
 			}
+			else if (mode == Modes.Menu)
+            {
+				MainMenu main_menu = new MainMenu(new Vector2(GetScreenWidth(), GetScreenHeight()));
+				main_menu._set_parent(ui_root);
+            }
 		}
 
-		public void print_hey()
-		{
-			Console.WriteLine("Hey :)");
-		}
-
-        public void Shutdown()
+		public void change_to_menu()
         {
+			change_mode(Modes.Menu);
+        }
+		public void change_to_game()
+        {
+			change_mode(Modes.Normal);
+		}
+		public void change_to_editor()
+        {
+			change_mode(Modes.Editor);
         }
 
-        public void Update()
+		// -------- //
+		// end game //
+        public void shut_down() { }
+
+		// ----------- //
+		// UPDATE GAME //
+		// ----------- //
+
+        public void update()
         {
             lastTime = currentTime;
             currentTime = stopwatch.ElapsedMilliseconds;
@@ -120,78 +124,51 @@ namespace Project2D
             }
             frames++;
 
-			if (mode == Modes.Normal)
+			
+			//update
+			foreach (Node node in root.get_children())
 			{
-				//update
-				foreach (Node node in root.get_children())
-				{
-					if (node is PhysicsNode physics_node) 
-					{ 
-						//update transformation
-						physics_node._physics_update(deltaTime);
-					}
-
-					//physics
-					node.update_global_transform();
+				if (node is PhysicsNode physics_node) 
+				{ 
+					//update transformation
+					physics_node._physics_update(deltaTime);
 				}
 
-				ui_root._update_global_transform();
-				ui_root._update_state();
-
-				collision_manager.run();
-
-			} else if (mode == Modes.Editor)
-			{
-				ui_root._update_global_transform();
-				ui_root._update_state();
+				//physics
+				node._update_global_transform();
 			}
+
+			//update ui
+			ui_root._update_global_transform();
+			ui_root._update_state();
+
+			collision_manager.run();
+
 		}
 
-        public void Draw()
+		// ----------------- //
+		// DRAW GAME CONTENT //
+		// ----------------- //
+
+        public void draw()
         {
             BeginDrawing();
 			ClearBackground(RLColor.BLACK);
 
-			if (mode == Modes.Normal)
-			{
-				//Draw game objects here
-				DrawText(fps.ToString(), 10, 10, 14, RLColor.RED);
-				BeginMode2D(camera);
+			//Draw FPS
+			DrawText(fps.ToString(), 10, 10, 14, RLColor.RED);
 
-				//Drawing occures here
+			//Draw the level
+			root._draw();
+			ui_root._draw();
 
-				EndMode2D();
-
-				root._draw();
-
-			} else if (mode == Modes.Editor)
-			{
-				//Draw title
-				DrawText("EDITOR", 10, 10, 14, RLColor.RED);
-
-				//Draw UI
-				ui_root._draw();
-			}
-			
 			EndDrawing();
         }
 
-		private void add_default_nodes()
-		{
-			//Wall
-			var wall = new PhysicsNode(root);
-			wall.set_texture(Graphics.get_texture_from_path(Graphics.wall));
-			wall.set_position(new Vector2(214, 96));
+		// ---------------------------------------------------- //
+		// generate game world based on the path to a text file //
 
-			//Tank
-			var tank = new Tank(root);
-			tank.set_position(new Vector2(100, 100));
-
-			collision_manager.add_node(wall);
-			collision_manager.add_node(tank);
-		}
-
-		private void generate_world(string _data_file_path)
+		private void generate_game_world(string _data_file_path)
 		{
 			const int	CELL_SIZE = 64;
 			const char	CELL_WALL = 'W';
@@ -260,14 +237,6 @@ namespace Project2D
 				Console.WriteLine("Exception: " + e.Message);
 			}
 			
-		}
-
-		public static RLVector2 get_RLVector2(Vector2 _vector)
-		{
-			RLVector2 result = new RLVector2();
-			result.x = _vector.x;
-			result.y = _vector.y;
-			return result;
 		}
 
     }

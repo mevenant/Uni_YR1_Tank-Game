@@ -56,14 +56,15 @@
     <Compile Include="Node\Collider.cs" />
     <Compile Include="Node\Node.cs" />
     <Compile Include="Node\PhysicsNode\PhysicsNode.cs" />
-    <Compile Include="Node\UI\Containers\Container.cs" />
-    <Compile Include="Node\UI\Containers\LevelEditor.cs" />
+    <Compile Include="UI\Container.cs" />
+    <Compile Include="UI\LevelEditor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Singletons\CollisionManager.cs" />
-    <Compile Include="Node\UI\Button.cs" />
-    <Compile Include="Node\UI\UI.cs" />
+    <Compile Include="UI\Button.cs" />
+    <Compile Include="UI\MainMenu.cs" />
+    <Compile Include="UI\UI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

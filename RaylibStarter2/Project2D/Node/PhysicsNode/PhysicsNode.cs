@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MathClasses;
 
+// --------------------------------------------------------------------------------- //
+// The base of every physics based node. Includes a collider and physics calculation //
+// --------------------------------------------------------------------------------- //
 
 class PhysicsNode : Node
 {
-	// -- // -- // -- // -- //
-	//		  FIELDS
-	// -- // -- // -- // -- //
+	// ------ //
+	// FIELDS //
+	// ------ //
+
+	// physics variables //
+
 	protected float delta = 0f;
 
 	protected Vector2 velocity;
@@ -21,10 +23,13 @@ class PhysicsNode : Node
 	protected float friction;
 	public Collider collider;
 
-	//physics matrices
+	// physics matrices //
+
 	protected Matrix3 oriantation_matrix = new Matrix3(true);
 	protected Matrix3 translation_matrix = new Matrix3(true);
 	protected Matrix3 previous_transform = new Matrix3(true);
+
+	// linear motion constants //
 
 	public const float ACCELERATION_FAST = 400f;
 	public const float ACCELERATION_MED = 200f;
@@ -45,18 +50,13 @@ class PhysicsNode : Node
 	{
 		parent = _parent;
 		update_physics_variables();
-
-		//collider = new BoxCollider(
-		//	new Vector2(-32, -32),
-		//	new Vector2(32, 32));
-		collider = new CircleCollider(30f);
+		collider = new CircleCollider(28f);
 	}
 	
 	public PhysicsNode(Node _parent, float _acceleration, float _friction, float _max_speed) : base(_parent)
 	{
 		parent = _parent;
 		update_physics_variables(_acceleration, _friction, _max_speed);
-
 		collider = new CircleCollider(30f);
 	}
 
@@ -65,6 +65,9 @@ class PhysicsNode : Node
 	// -- // -- // -- // -- // -- //
 	public virtual void _physics_update(float _delta)
 	{
+		if (deleted)
+			return;
+
 		//update delta
 		delta = _delta;
 
@@ -96,20 +99,22 @@ class PhysicsNode : Node
 		}
 	}
 
-	public override void update_global_transform()
+	// -- // -- // -- // -- //
+	//		 METHODS		//
+	// -- // -- // -- // -- //
+
+	// update the global transformation and the position of collider of this node //
+
+	public override void _update_global_transform()
 	{
-		base.update_global_transform();
+		base._update_global_transform();
 		if (collider != null)
 		{
 			collider.set_position(get_global_position());
 		}
 	}
 
-	// -- // -- // -- // -- //
-	//		 METHODS		//
-	// -- // -- // -- // -- //
-
-	//update velocity's direction (NOT VELOCITY ITSELF) and accelerate
+	// update velocity's direction (NOT VELOCITY ITSELF) and accelerate //
 	public virtual void _move(Vector2 _input_direction)
 	{
 		direction = _input_direction;
@@ -117,12 +122,16 @@ class PhysicsNode : Node
 		if (speed < max_speed)
 			speed += acceleration * delta;
 	}
+
+	// get the ref to the collider of this node //
+
 	public Collider get_collider()
 	{
 		return collider;
 	}
 
-	//set acceleration, friction, and max speed
+	// set acceleration, friction, and max speed //
+
 	protected void update_physics_variables(float _acceleration = ACCELERATION_MED, float _friction = FRICTION_MED, float _max_speed = MAX_SPEED_MED)
 	{
 		acceleration = _acceleration;
@@ -130,9 +139,12 @@ class PhysicsNode : Node
 		max_speed = _max_speed;
 	}
 
+	// When collision occures, this method is called //
+
 	public virtual void _on_collision(PhysicsNode _other)
 	{
-		//Console.WriteLine("collision occured");
+		if (Global.IS_DEBUG)
+			Console.WriteLine("collision occured");
 	}
 }
 

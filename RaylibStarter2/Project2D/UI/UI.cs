@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MathClasses;
 using Raylib;
 using static Raylib.Raylib;
+
+// --------------------------------------- //
+// Used to handle signals between UI nodes //
+// --------------------------------------- //
 
 struct Signal {
 	public static string MOUSE_ENTERED = "0";
 	public static string MOUSE_EXITED = "1";
 	public static string MOUSE_PRESSED = "2";
+	public static string MOUSE_PRESSED_SECONDARY = "3";
 
 	public UI source;
 	public string message;
@@ -21,6 +23,30 @@ struct Signal {
 		message = _message;
     }
 }
+
+// ------------------------------------ //
+// Used to update the theme of UI nodes //
+// ------------------------------------ //
+
+class Theme
+{
+	public RLColor color_primary;
+	public RLColor color_secondary;
+	public RLColor color_text;
+	public RLColor color_hover;
+
+	public Theme(RLColor _primary_color, RLColor _secondary_color, RLColor _text_color, RLColor _hover_color)
+	{
+		color_primary = _primary_color;
+		color_secondary = _secondary_color;
+		color_text = _text_color;
+		color_hover = _hover_color;
+	}
+}
+
+// ------------------------- //
+// The base of every UI node //
+// ------------------------- //
 
 class UI
 {
@@ -33,39 +59,47 @@ class UI
 
 	//Node fields
 	private List<UI> children = new List<UI>(); //list of children nodes
-	protected	UI parent = null;                       //parent node
-	protected	Colour modulate = RLColor.WHITE.ToColor();
-	protected	Matrix3 local_transform = new Matrix3(true);
-	private		Matrix3 global_transform = new Matrix3(true);   //updated in Update of Game.cs
+	protected UI parent = null;                       //parent node
+	protected Colour modulate = RLColor.WHITE.ToColor();
+	protected Matrix3 local_transform = new Matrix3(true);
+	private	Matrix3 global_transform = new Matrix3(true);   //updated in Update of Game.cs
+
+	protected Theme theme = new Theme(RLColor.BROWN, RLColor.RED, RLColor.WHITE, RLColor.RED);
+
+	// ----------- //
+	// CONSTRUCTOR //
+	// ----------- //
+
+	public UI() { }
 
 
+	// ------------------------------------------------------------------------------------------- //
 	//go through each child and update the UI state based on input. e.g. mouse hover or mouse click
+
 	public virtual void _update_state()
 	{
 		if (collider != null)
 		{
-			//CHECK HOVER
-
 			if (is_hovered)
 			{
-				if (!collider.overlaps(get_vector(GetMousePosition())))
+				if (!collider.overlaps(get_vector(GetMousePosition())))		//mouse exited
 				{
 					is_hovered = false;
 					_on_mouse_exit();
 				}
+
+				if (IsMouseButtonPressed(MouseButton.MOUSE_LEFT_BUTTON)) _on_pressed();
+				if (IsMouseButtonPressed(MouseButton.MOUSE_RIGHT_BUTTON)) _on_pressed_secondary();
 			} 
 			else
 			{
-				if (collider.overlaps(get_vector(GetMousePosition())))
+				if (collider.overlaps(get_vector(GetMousePosition())))		//mouse entered
 				{
 					is_hovered = true;
 					_on_mouse_enter();
 				}
+
 			}
-
-			//CHECK PRESSED
-			if (is_hovered && IsMouseButtonPressed(MouseButton.MOUSE_LEFT_BUTTON)) _on_pressed();
-
 		}
 
 		foreach (UI node in children)
@@ -75,6 +109,10 @@ class UI
 
 	}
 
+	// ---- //
+	// DRAW //
+	// ---- //
+
 	public virtual void _draw()
 	{
 		foreach (UI node in get_children())
@@ -83,7 +121,9 @@ class UI
 		}
 	}
 
-	//update global transform
+	// ----------------------- //
+	// update global transform //
+
 	public virtual void _update_global_transform()
 	{
 		if (parent != null)
@@ -101,24 +141,53 @@ class UI
 		}
 	}
 
+	// ------- //
+	// SIGNALS //
+	// ------- //
+
+	// ----------- //
+	// mouse enter //
+	
 	public virtual void _on_mouse_enter()
 	{
-		Console.WriteLine("UI hovered");
-		//emit signal that mouse entered this button
+		if (Global.IS_DEBUG)
+			Console.WriteLine("UI hovered");
 		_emit_signal(new Signal(this, Signal.MOUSE_ENTERED));
 	}
 
+	// ---------- //
+	// mouse exit //
+
 	public virtual void _on_mouse_exit()
 	{
-		Console.WriteLine("UI unhovered");
+		if (Global.IS_DEBUG)
+			Console.WriteLine("UI unhovered");
 		_emit_signal(new Signal(this, Signal.MOUSE_EXITED));
 	}
 
+	// ------------- //
+	// mouse pressed //
+
 	public virtual void _on_pressed()
 	{
-		Console.WriteLine("UI pressed");
+		if (Global.IS_DEBUG)
+			Console.WriteLine("UI pressed");
 		_emit_signal(new Signal(this, Signal.MOUSE_PRESSED));
 	}
+
+	// ----------------------  //
+	// mouse pressed secondary //
+
+	public virtual void _on_pressed_secondary()
+	{
+		if (Global.IS_DEBUG)
+			Console.WriteLine("UI pressed secondary");
+		_emit_signal(new Signal(this, Signal.MOUSE_PRESSED_SECONDARY));
+	}
+
+	// --------------------- //
+	// PUBLIC STATIC METHODS //
+	// --------------------- //
 
 	public static RLVector2 get_RLVector2(Vector2 _vector)
 	{
@@ -136,9 +205,9 @@ class UI
 		return result;
 	}
 
-	// -- // -- // -- // -- // -- //
-	//PUBLIC METHODS
-	// -- // -- // -- // -- // -- //
+	// -------------- //
+	// PUBLIC METHODS //
+	// -------------- //
 
 	//Add a node as a child of this node
 	public virtual void _add_child(UI _node)
@@ -174,7 +243,10 @@ class UI
 
 		//if this node is a child of another parent, remove this from their list of children
 		if (parent != null)
+		{
 			parent._remove_child(this);
+			theme = parent.theme;
+		}
 
 		//update current parent and its list of children
 		parent = _parent;
@@ -225,14 +297,28 @@ class UI
         }
     }
 
-	public void connect(UI node)
+	//Connect this node to _node. So we send signals to them
+	public void connect(UI _node)
 	{
-		signal_connections.Add(node);
+		signal_connections.Add(_node);
 	}
 
+	//Disconnect this node from _node so we don't send signals to them anymore
 	public void disconnect(UI node)
 	{
 		signal_connections.Remove(node);
+	}
+
+	// set the theme of this ui node and its children //
+
+	public void set_theme(Theme _theme)
+	{
+		theme = _theme;
+
+		foreach (UI child in children)
+        {
+			set_theme(theme);
+        }
 	}
 }
 

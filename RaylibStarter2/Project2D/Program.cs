@@ -12,19 +12,21 @@ namespace Project2D
     {
         static void Main(string[] args)
         {
-            Game game = new Game();
+            string window_title = "the simplest level editor and tank game";
 
-            InitWindow(640, 480, "Hello World");
+            InitWindow((int)Global.WINDOW_SIZE.x, (int)Global.WINDOW_SIZE.y, window_title);
+            
+            Game game = new Game(Game.Modes.Menu);
 
-            game.Init();
+            game.init();
 
             while (!WindowShouldClose())
             {
-                game.Update();
-                game.Draw();
+                game.update();
+                game.draw();
             }
 
-            game.Shutdown();
+            game.shut_down();
 
             CloseWindow();
         }
